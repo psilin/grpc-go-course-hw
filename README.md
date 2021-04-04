@@ -32,4 +32,7 @@ To build the client execute from root directory:
 ```
 
 where `usecase` designates one of the following usecases:
-  * `unary` - execute client's Unary API; 
+  * `unary` - execute Unary API;
+  * `server_streaming` - execute Server Streaming API;
+  * `client_streaming` - execute Client Streaming API;
+  * `bidi_streaming` - execute Bidirectional Streaming API.  
