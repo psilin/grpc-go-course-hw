@@ -32,4 +32,4 @@ To build the client execute from root directory:
 ```
 
 where `usecase` designates one of the following usecases:
-  * execute client's Unary API; 
+  * `unary` - execute client's Unary API; 
