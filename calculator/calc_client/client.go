@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"time"
 	"github.com/psilin/grpc-go-course-hw/calculator/calcpb"
 	"google.golang.org/grpc"
 )
@@ -74,7 +75,37 @@ func doServerStreaming(c calcpb.CalculatorServiceClient) {
 }
 
 func doClientStreaming(c calcpb.CalculatorServiceClient) {
-	fmt.Printf("%v\n", c)
+	fmt.Println("Starting to do a Compute Average Client Streaming RPC...")
+	reqs := []*calcpb.ComputeAverageRequest{
+		&calcpb.ComputeAverageRequest{
+			Number: 1,
+		},
+		&calcpb.ComputeAverageRequest{
+			Number: 2,
+		},
+		&calcpb.ComputeAverageRequest{
+			Number: 3,
+		},
+		&calcpb.ComputeAverageRequest{
+			Number: 4,
+		},
+	}
+	stream, err := c.ComputeAverage(context.Background())
+	if err != nil {
+		log.Fatalf("error while calling ComputeAverage RPC: %v", err)
+	}
+
+	for _, req := range(reqs) {
+		fmt.Printf("Sending req: %v\n", req)
+		stream.Send(req)
+		time.Sleep(1000 * time.Millisecond)
+	}
+
+	res, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalf("error while receiving from ComputeAverage RPC: %v", err)
+	}
+	fmt.Printf("Received result %v\n", res)
 }
 
 func doBidirectionalStreaming(c calcpb.CalculatorServiceClient) {
