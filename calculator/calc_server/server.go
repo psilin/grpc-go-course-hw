@@ -33,9 +33,13 @@ func (*server) PrimeNumberDecomposition(req *calcpb.PrimeNumberDecompositionRequ
 
 	for number > 1 {
 		if number % divisor == 0 {
-			stream.Send(&calcpb.PrimeNumberDecompositionResponse{
+			err := stream.Send(&calcpb.PrimeNumberDecompositionResponse{
 				PrimeFactor: divisor,
 			})
+			if err != nil {
+				log.Fatalf("Error while sending to client: %v\n", err)
+				return err	
+			}
 			number = number / divisor
 		} else {
 			divisor++
@@ -46,7 +50,7 @@ func (*server) PrimeNumberDecomposition(req *calcpb.PrimeNumberDecompositionRequ
 }
 
 func (*server) ComputeAverage(stream calcpb.CalculatorService_ComputeAverageServer) error {
-	fmt.Printf("ComputeAverage function was invoked by a streaming request")
+	fmt.Printf("ComputeAverage function was invoked by a streaming request\n")
 	cnt := int64(0)
 	summ := int64(0)
 	for {
@@ -58,9 +62,41 @@ func (*server) ComputeAverage(stream calcpb.CalculatorService_ComputeAverageServ
 			})
 		} else if err != nil{
 			log.Fatalf("Error while reading client stream: %v\n", err)
+			return err
 		} 
 		summ += req.GetNumber()
 		cnt++
+	}
+}
+
+func (*server) ComputeMax(stream calcpb.CalculatorService_ComputeMaxServer) error {
+	fmt.Printf("ComputeMax function was invoked by a streaming request\n")
+	max := []int64{}
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		} else if err != nil {
+			log.Fatalf("Error while reading client stream: %v\n", err)
+			return err
+		}
+
+		val := req.GetNumber()
+		if len(max) == 0 {
+			max = append(max, val)
+		} else if val > max[0] {
+			max[0] = val
+		} else {
+			continue
+		}
+
+		err = stream.Send(&calcpb.ComputeMaxResponse{
+			Max: max[0],
+		})
+		if err != nil {
+			log.Fatalf("Error while sending to client: %v\n", err)
+			return err
+		}
 	}
 }
 

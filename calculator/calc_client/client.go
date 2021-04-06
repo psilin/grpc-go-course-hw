@@ -92,7 +92,7 @@ func doClientStreaming(c calcpb.CalculatorServiceClient) {
 	}
 	stream, err := c.ComputeAverage(context.Background())
 	if err != nil {
-		log.Fatalf("error while calling ComputeAverage RPC: %v", err)
+		log.Fatalf("error while calling ComputeAverage RPC: %v\n", err)
 	}
 
 	for _, req := range(reqs) {
@@ -103,11 +103,46 @@ func doClientStreaming(c calcpb.CalculatorServiceClient) {
 
 	res, err := stream.CloseAndRecv()
 	if err != nil {
-		log.Fatalf("error while receiving from ComputeAverage RPC: %v", err)
+		log.Fatalf("error while receiving from ComputeAverage RPC: %v\n", err)
 	}
 	fmt.Printf("Received result %v\n", res)
 }
 
 func doBidirectionalStreaming(c calcpb.CalculatorServiceClient) {
-	fmt.Printf("%v\n", c)
+	fmt.Println("Do Compute max Bidirectional streaming RPC...")
+	stream, err := c.ComputeMax(context.Background())
+	if err != nil {
+		log.Fatalf("error while calling ComputeMax RPC: %v\n", err)
+		return
+	}
+	input := []int64{1,5,3,6,2,20}
+	wait_chan := make(chan struct{})
+	go func() {
+		defer stream.CloseSend()
+		for _, val := range(input) {
+			err = stream.Send(&calcpb.ComputeMaxRequest{
+				Number: int64(val),
+			})
+			if err != nil {
+				log.Fatalf("error while sending to server: %v\n", err)
+				return	
+			}
+		}
+	}()
+
+	go func() {
+		for {
+			res, err := stream.Recv()
+			if err == io.EOF {
+				break
+			} else if err != nil {
+				log.Fatalf("error while receiving stream from server: %v\n", err)
+				break
+			}
+			fmt.Printf("Received max value: %v\n", res.GetMax())
+		}
+		close(wait_chan)
+	}()
+
+	<-wait_chan
 }

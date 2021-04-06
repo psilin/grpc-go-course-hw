@@ -28,6 +28,13 @@ message ComputeAverageResponse {
     double average = 1;
 }
 
+message ComputeMaxRequest {
+    int64 number = 1;
+}
+
+message ComputeMaxResponse {
+    int64 max = 1;
+}
 
 service CalculatorService {
     // Unary
@@ -38,4 +45,7 @@ service CalculatorService {
 
     // Client Streaming
     rpc ComputeAverage(stream ComputeAverageRequest) returns (ComputeAverageResponse) {};
+
+    // Bidirectional streaming
+    rpc ComputeMax(stream ComputeMaxRequest) returns (stream ComputeMaxResponse) {};
 }
