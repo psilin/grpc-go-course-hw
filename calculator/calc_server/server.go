@@ -8,6 +8,7 @@ import (
 	"github.com/psilin/grpc-go-course-hw/calculator/calcpb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
 	"math"
 	"net"
@@ -147,6 +148,9 @@ func main() {
 
 	s := grpc.NewServer()
 	calcpb.RegisterCalculatorServiceServer(s, &server{})
+
+	// register reflection service on server
+	reflection.Register(s)
 	
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
