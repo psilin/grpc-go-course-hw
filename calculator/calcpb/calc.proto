@@ -44,6 +44,15 @@ message SquareRootResponse {
     double number_root = 1;
 }
 
+message SumWithDeadlineRequest {
+    int32 first_number = 1;
+    int32 second_number = 2;
+}
+
+message SumWithDeadlineResponse {
+    int32 sum_result = 1;
+}
+
 service CalculatorService {
     // Unary
     rpc Sum(SumRequest) returns (SumResponse) {};
@@ -61,4 +70,6 @@ service CalculatorService {
     // this RPC will throw an exception if the sent number is negative
     // The error being sent is of type INVALID_ARGUMENT
     rpc SquareRoot(SquareRootRequest) returns (SquareRootResponse) {};
+
+    rpc SumWithDeadline(SumWithDeadlineRequest) returns (SumWithDeadlineResponse) {};
 }

@@ -39,6 +39,8 @@ func main() {
 		doBidirectionalStreaming(c)
 	case "unary_error":
 		doErrorUnary(c)
+	case "unary_deadline":
+		doUnaryWithDeadline(c)
 	default:
 		log.Fatalf("wrong usecase provided!\n")
 	}
@@ -180,4 +182,39 @@ func doErrorUnary(c calcpb.CalculatorServiceClient) {
 
 	// error call
 	doErrorCall(c, -1)
+}
+
+func doUnaryWithDeadlineCall(c calcpb.CalculatorServiceClient, timeout time.Duration) {
+	fmt.Println("Starting to do a UnaryWithDeadline RPC...")
+	req := &calcpb.SumWithDeadlineRequest{
+		FirstNumber:  3,
+		SecondNumber: 4,
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	res, err := c.SumWithDeadline(ctx, req)
+	if err != nil {
+
+		statusErr, ok := status.FromError(err)
+		if ok {
+			if statusErr.Code() == codes.DeadlineExceeded {
+				fmt.Println("Timeout was hit! Deadline was exceeded")
+			} else {
+				fmt.Printf("unexpected error: %v", statusErr)
+			}
+		} else {
+			log.Fatalf("error while calling GreetWithDeadline RPC: %v", err)
+		}
+		return
+	}
+	log.Printf("Response from SumWithDeadline: %v", res.GetSumResult())
+}
+
+func doUnaryWithDeadline(c calcpb.CalculatorServiceClient) {
+	// correct call
+	doUnaryWithDeadlineCall(c, 5 * time.Second)
+
+	// timeout call
+	doUnaryWithDeadlineCall(c, 1 * time.Second)
 }

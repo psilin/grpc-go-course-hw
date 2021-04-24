@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 	"math"
 	"net"
+	"time"
 )
 
 type server struct{
@@ -115,6 +116,25 @@ func (*server) SquareRoot(ctx context.Context, req *calcpb.SquareRootRequest) (*
 	return &calcpb.SquareRootResponse{
 		NumberRoot: math.Sqrt(float64(number)),
 	}, nil
+}
+
+func (*server) SumWithDeadline(ctx context.Context, req *calcpb.SumWithDeadlineRequest) (*calcpb.SumWithDeadlineResponse, error) {
+	fmt.Printf("Received Sum With Deadline RPC: %v\n", req)
+	for i := 0; i < 3; i++ {
+		if ctx.Err() == context.DeadlineExceeded {
+			// the client canceled the request
+			fmt.Println("The client canceled the request!")
+			return nil, status.Error(codes.Canceled, "the client canceled the request")
+		}
+		time.Sleep(1 * time.Second)
+	}
+	firstNumber := req.FirstNumber
+	secondNumber := req.SecondNumber
+	sum := firstNumber + secondNumber
+	res := &calcpb.SumWithDeadlineResponse{
+		SumResult: sum,
+	}
+	return res, nil
 }
 
 func main() {

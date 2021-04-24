@@ -2,6 +2,8 @@
 
 This repo represents homework for Golang gRPC course by Stephane Maarek https://www.udemy.com/course/grpc-golang/
 
+Tested against `libprotoc` version `3.14.0`.
+
 ## Build
 
 To generate boilerplate code from protobuf spec run the following command from `calculator/calcpb` directory:
@@ -36,4 +38,5 @@ where `usecase` designates one of the following usecases:
   * `server_streaming` - execute Server Streaming API;
   * `client_streaming` - execute Client Streaming API;
   * `bidi_streaming` - execute Bidirectional Streaming API;
-  * `unary_error` - execute Unary API with error handling.
+  * `unary_error` - execute Unary API with error handling;
+  * `unary_deadline` - execute Unary API with deadline.
