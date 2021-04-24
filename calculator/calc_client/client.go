@@ -9,10 +9,12 @@ import (
 	"time"
 	"github.com/psilin/grpc-go-course-hw/calculator/calcpb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func main() {
-	usecase := flag.String("usecase", "", "one of the usecases (unary, ...) for client")
+	usecase := flag.String("usecase", "", "one of the usecases (unary, server_streaming, client_streaming, bidi_streaming, unary_error) for client")
 	flag.Parse()
 
 	fmt.Println("Calculator Client")
@@ -35,6 +37,8 @@ func main() {
 		doClientStreaming(c)
 	case "bidi_streaming":
 		doBidirectionalStreaming(c)
+	case "unary_error":
+		doErrorUnary(c)
 	default:
 		log.Fatalf("wrong usecase provided!\n")
 	}
@@ -145,4 +149,35 @@ func doBidirectionalStreaming(c calcpb.CalculatorServiceClient) {
 	}()
 
 	<-wait_chan
+}
+
+func doErrorCall(c calcpb.CalculatorServiceClient, n int32) {
+	res, err := c.SquareRoot(context.Background(), &calcpb.SquareRootRequest{Number: n})
+
+	if err != nil {
+		respErr, ok := status.FromError(err)
+		if ok {
+			// actual error from gRPC (user error)
+			fmt.Printf("Error message from server: %v\n", respErr.Message())
+			fmt.Println(respErr.Code())
+			if respErr.Code() == codes.InvalidArgument {
+				fmt.Println("We probably sent a negative number!")
+				return
+			}
+		} else {
+			log.Fatalf("Big Error calling SquareRoot: %v", err)
+			return
+		}
+	}
+	fmt.Printf("Result of square root of %v: %v\n", n, res.GetNumberRoot())
+}
+
+func doErrorUnary(c calcpb.CalculatorServiceClient) {
+	fmt.Println("Starting to do a SquareRoot Unary RPC...")
+
+	// correct call
+	doErrorCall(c, 4)
+
+	// error call
+	doErrorCall(c, -1)
 }

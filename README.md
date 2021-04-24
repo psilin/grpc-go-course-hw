@@ -35,4 +35,5 @@ where `usecase` designates one of the following usecases:
   * `unary` - execute Unary API;
   * `server_streaming` - execute Server Streaming API;
   * `client_streaming` - execute Client Streaming API;
-  * `bidi_streaming` - execute Bidirectional Streaming API.  
+  * `bidi_streaming` - execute Bidirectional Streaming API;
+  * `unary_error` - execute Unary API with error handling.
